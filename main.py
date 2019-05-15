@@ -11,7 +11,7 @@ from torch.autograd import gradcheck,Variable,Function
 scale = 0.95 ; #make it 0.05 for grad check
 gradCheck = False
 # Reading the Images
-x = imresize(imread('0063L.png'),scale)
+x = imresize(imread('0063L.png'),scale)    # imresize(x, 0.5)将原图缩小0.5倍
 y = imresize(imread('0063R.png'),scale)
 
 x = x.astype(float)/255
@@ -40,21 +40,24 @@ class Corr(nn.Module):
         return torch.mean(out, 1).squeeze()
 
 
-
+# correspondence layer
 def correlation_map(x, y, max_disp):
     corr_tensors = []
     for i in range(-max_disp, 0, 1):
         shifted = tf.pad(tf.slice(y, [0]*4, [-1, -1, y.shape[2].value + i, -1]),
                          [[0, 0], [0, 0], [-i, 0], [0, 0]], "CONSTANT")
+        #    tf.pad,张量填充：https://blog.csdn.net/yy_diego/article/details/81563160
+        #    tf.slice，张量切片：http://www.360doc.com/content/17/0115/14/10408243_622618137.shtml
         corr = tf.reduce_mean(tf.multiply(shifted, x), axis=3)
         corr_tensors.append(corr)
     for i in range(max_disp + 1):
         shifted = tf.pad(tf.slice(x, [0, 0, i, 0], [-1]*4),
                          [[0, 0], [0, 0], [0, i], [0, 0]], "CONSTANT")
-        corr = tf.reduce_mean(tf.multiply(shifted, y), axis=3)
+        corr = tf.reduce_mean(tf.multiply(shifted, y), axis=3)    # 图像块矩阵内积求解相似度
         corr_tensors.append(corr)
     return tf.squeeze(tf.reduce_mean(tf.transpose(tf.stack(corr_tensors),
                         perm=[1, 2, 3, 0]),3),0)
+        #    tf.transpose转置：http://www.pianshen.com/article/6688178723/
 
 # Tensor flow
 xf = tf.convert_to_tensor(x)
