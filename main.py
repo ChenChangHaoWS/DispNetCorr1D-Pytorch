@@ -48,6 +48,7 @@ def correlation_map(x, y, max_disp):
                          [[0, 0], [0, 0], [-i, 0], [0, 0]], "CONSTANT")
         #    tf.pad,张量填充：https://blog.csdn.net/yy_diego/article/details/81563160
         #    tf.slice，张量切片：http://www.360doc.com/content/17/0115/14/10408243_622618137.shtml
+        #    slice函数用法有误，y的维度为3：代码参考flownet2-tf
         corr = tf.reduce_mean(tf.multiply(shifted, x), axis=3)
         corr_tensors.append(corr)
     for i in range(max_disp + 1):
